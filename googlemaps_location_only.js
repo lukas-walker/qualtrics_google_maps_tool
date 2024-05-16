@@ -2,6 +2,9 @@
 Qualtrics.SurveyEngine.addOnload(function() {
 	// for reference: https://api.qualtrics.com/82bd4d5c331f1-qualtrics-java-script-question-api-class
 	
+	let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_API_KEY");
+	let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_ID");
+	
 	// use this script on a text input type question.
 	let questionObject = this;
 	
@@ -14,8 +17,6 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
 	let qid = questionObject.questionId;
 	
-	let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("MAP_API_KEY");
-	let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("MAP_ID");
 
 
 	// Function to load the Google Maps API script dynamically

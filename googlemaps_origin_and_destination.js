@@ -4,21 +4,25 @@ Qualtrics.SurveyEngine.addOnload(function() {
   
   var qid = this.questionId;
   
-  let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("MAP_API_KEY");
-  let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("MAP_ID");
+  let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_API_KEY");
+  let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_ID");
   
-  let inputLabelText = "Zwischenstopp";
+  let origin_field = "__ORIGIN";
+  let destination_field = "__DESTINATION";
+  
+  let origin_field_result = "w6_q1_wohnort";
+  let origin_field_result_coordinates = "w6_q1_wohnort_coordinates";
+  let destination_field_result = "w6_q1_arbeitsort";
+  let destination_field_result_coordinates = "w6_q1_arbeitsort_coordinates";
+  
   let dropdownLabelText = "Transportmittel";
   
-  let inputLabelText = Qualtrics.SurveyEngine.getEmbeddedData("ORIGIN");
-  let dropdownLabelText = Qualtrics.SurveyEngine.getEmbeddedData("DESTINATION");
-  
-  let show_add_and_remove_buttons = true;
-  let show_directions = true;
-  let show_travel_modes = true;
-  let show_travel_time = true;
+  let show_add_and_remove_buttons = false;
+  let show_directions = false;
+  let show_travel_modes = false;
+  let show_travel_time = false;
   let number_initial_locations = 2;
-  let max_locations = 10; // do not change this if you don't know what you are doing
+  let max_locations = 2;
   
   
   const style = document.createElement('style');
@@ -109,7 +113,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 	let locations = [];
 
 	// adds a location in the lists after index (e.g. index == 0 => new location at index == 1)
-	function addLocation(id=null) {
+	function addLocation(id=null, title="") {
 		if (locations.length >= max_locations) return;
 		
 		if (id != null && locations.some(elem => elem.id === id)) { 
@@ -165,7 +169,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 		locationLabel.setAttribute('for', inputId);
 		locationLabel.setAttribute('id', inputId+"-label");
 		locationLabel.setAttribute('class', 'LocationQuestionText');
-		locationLabel.innerText = inputLabelText;
+		locationLabel.innerText = title;
 		locationDiv.appendChild(locationLabel);
 		
 		// New input for the location
@@ -328,45 +332,24 @@ Qualtrics.SurveyEngine.addOnload(function() {
 	}
 	
 	function updateQualtricsData() {
-		console.log("updateQualtricsData");
-		console.log(locations);
 		
-		for (let i = 0; i < locations.length - 1; i++) {
-			
-			// Access the current item and the next item
-			// --> iterate through all legs of the route
-			const current = locations[i];
-			const next = locations[i + 1];
-			const leg = i+1;
-			
-			Qualtrics.SurveyEngine.setEmbeddedData("maps_question_" + qid + "_leg_"+leg+"_origin", current.addressText );
-			Qualtrics.SurveyEngine.setEmbeddedData("maps_question_" + qid + "_leg_"+leg+"_destination", next.addressText );
-			Qualtrics.SurveyEngine.setEmbeddedData("maps_question_" + qid + "_leg_"+leg+"_travel_mode", current.travelMode );
-			
-			let durationTotal = 0;
-			let distanceTotal = 0;
-
-			var request = {
-			  origin: current.marker.getPosition(),
-			  destination: next.marker.getPosition(),
-			  travelMode: 'DRIVING'
-			};
-			directionsServices[i].route(request, function (result, status) {
-			  if (status === 'OK') {				  
-				durationTotal += result.routes[0].legs[0].duration.value;
-				distanceTotal += result.routes[0].legs[0].distance.value;
-
-				Qualtrics.SurveyEngine.setEmbeddedData("maps_question_" + qid + "_leg_"+leg+"_duration_seconds", result.routes[0].legs[0].duration.value );
-				Qualtrics.SurveyEngine.setEmbeddedData("maps_question_" + qid + "_leg_"+leg+"_distance_meters", result.routes[0].legs[0].distance.value );
-			  }
-			});
-		}
+		console.log(locations[0].marker.getPosition());
+		
+		console.log(locations[1].marker.getPosition());
+		
+		// save origin data
+		Qualtrics.SurveyEngine.setEmbeddedData(origin_field_result, locations[0].addressText );
+		Qualtrics.SurveyEngine.setEmbeddedData(origin_field_result_coordinates, locations[0].marker.getPosition().lat() + ", " + locations[0].marker.getPosition().lng());
+		
+		// save destination data
+		Qualtrics.SurveyEngine.setEmbeddedData(destination_field_result, locations[1].addressText );
+		Qualtrics.SurveyEngine.setEmbeddedData(destination_field_result_coordinates, locations[1].marker.getPosition().lat() + ", " + locations[1].marker.getPosition().lng() );
 	}
 	
-	for (let i = 0; i < number_initial_locations; i++) {
-		// add initial locations 
-		addLocation();
-	}
+
+	addLocation(null, Qualtrics.SurveyEngine.getEmbeddedData(origin_field));
+	addLocation(null, Qualtrics.SurveyEngine.getEmbeddedData(destination_field));
+	
 
 	// A text field where text can be displayed programmatically
     const output = document.createElement('p');
