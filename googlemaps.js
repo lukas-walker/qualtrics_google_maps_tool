@@ -4,14 +4,13 @@ Qualtrics.SurveyEngine.addOnload(function() {
   
   var qid = this.questionId;
   
-  console.log(qid);
+  let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("MAP_API_KEY");
+  let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("MAP_ID");
   
-  let API_KEY = "";
-  let MAP_ID  = "";
-  
-  let show_add_and_remove_buttons = true;
-  let show_directions = true;
-  let show_travel_modes = true;
+  let show_add_and_remove_buttons = false;
+  let show_directions = false;
+  let show_travel_modes = false;
+  let show_travel_time = false;
   let number_initial_locations = 2;
   let max_locations = 10; // do not change this if you don't know what you are doing
   
@@ -313,7 +312,9 @@ Qualtrics.SurveyEngine.addOnload(function() {
 				durationTotal += result.routes[0].legs[0].duration.value;
 				distanceTotal += result.routes[0].legs[0].distance.value;
 				
-				output.innerText = "Total " + (durationTotal/60) + " min, " + (distanceTotal/1000) + " km";
+				if (show_travel_time) {
+					output.innerText = "Total " + (durationTotal/60) + " min, " + (distanceTotal/1000) + " km";
+				}
 			  }
 			});
 			

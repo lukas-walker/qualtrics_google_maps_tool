@@ -14,8 +14,8 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
 	let qid = questionObject.questionId;
 	
-	let API_KEY = "";
-	let MAP_ID  = "";
+	let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("MAP_API_KEY");
+	let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("MAP_ID");
 
 
 	// Function to load the Google Maps API script dynamically
