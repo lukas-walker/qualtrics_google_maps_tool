@@ -7,7 +7,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
   
   
   
-  // THESE FIELDS NEED TO BE ADAPTED AND ADDED AS EMBEDDED FIELDS IN THE SURVEY FLOW
+  // THE FOLLOWING FIELDS NEED TO BE ADAPTED AND ADDED AS EMBEDDED FIELDS IN THE SURVEY FLOW
   
   // TEXT FIELDS
   // These fields should contain text that is displayed. You are responsible for translating them in the survey flow.
