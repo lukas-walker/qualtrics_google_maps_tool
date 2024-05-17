@@ -2,18 +2,48 @@
 Qualtrics.SurveyEngine.addOnload(function() {
   // for reference: https://api.qualtrics.com/82bd4d5c331f1-qualtrics-java-script-question-api-class
   
-  var qid = this.questionId;
   
-  let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_API_KEY");
-  let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_ID");
+  // THIS SCRIPT HAS TO BE CONNECTED TO A TEXT INPUT TYPE QUESTION.
   
+  
+  
+  // THESE FIELDS NEED TO BE ADAPTED AND ADDED AS EMBEDDED FIELDS IN THE SURVEY FLOW
+  
+  // TEXT FIELDS
+  // These fields should contain text that is displayed. You are responsible for translating them in the survey flow.
+  
+  // The origin field is displayed above the first input box
   let origin_field = "__ORIGIN";
+  // The destination field is displayed above the second input box
   let destination_field = "__DESTINATION";
   
+  // DATA FIELDS
+  // These fields contain data after respondents filled in the question
+  
+  // contains the text name of the origin
   let origin_field_result = "w6_q1_wohnort";
+  // contains the coordinates (comma separated latitude and longitude) of the origin
   let origin_field_result_coordinates = "w6_q1_wohnort_coordinates";
+  // contains the text name of the destination
   let destination_field_result = "w6_q1_arbeitsort";
+  // contains the coordinates (comma separated latitude and longitude) of the destination
   let destination_field_result_coordinates = "w6_q1_arbeitsort_coordinates";
+  
+  
+  // API KEYS
+  // These fields need to be defined in the survey as embedded FIELDS
+  
+  // The Google Maps Api Key
+  let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_API_KEY");
+  // The Map ID from your google cloud map platform (https://console.cloud.google.com/google/maps-apis/home)
+  let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_ID");
+  
+  
+  // **************************************
+  // DO NOT edit anything beyond this point
+  // **************************************
+  
+  var qid = this.questionId;
   
   let dropdownLabelText = "Transportmittel";
   
@@ -69,12 +99,12 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     // Insert the map div into the Qualtrics question text or after an input field
     document.getElementById(qid).appendChild(mapDiv); // Adjust "QID1" to your specific question ID
-
-    const map = new google.maps.Map(document.getElementById('map'), {
-      center: { lat: 47.378, lng: 8.54 },
-      zoom: 10,
-      mapId: MAP_ID
-    });
+	
+	const map = new google.maps.Map(document.getElementById('map'), {
+		center: { lat: 47, lng: 8 },
+		zoom: 8,
+		mapId: MAP_ID
+	});
 
     const autocompleteOptions = {
       fields: ["address_components", "geometry", "icon", "name", "formatted_address"],
@@ -119,7 +149,6 @@ Qualtrics.SurveyEngine.addOnload(function() {
 		if (id != null && locations.some(elem => elem.id === id)) { 
 			// id is valid 
 			index = locations.findIndex(elem => elem.id === id)+1;
-			console.log("Add location at index: "+index);
 		}
 		else { // default add index at end
 			id = null;
@@ -127,10 +156,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 		}
 		
 		// new marker for new location
-		const marker =  new google.maps.Marker({ 
-		  map,
-		  position: { lat: 47.378, lng: 8.54 }, // Zürich HB by default
-		});
+		let marker =  null;
 		// new id for new location
 		let newId = counter++; // set newId to counter and then count + 1
 		
@@ -140,8 +166,6 @@ Qualtrics.SurveyEngine.addOnload(function() {
 			addressText: "",
 			travelMode: travel_modes[0].value
 		}
-		
-		console.log(travel_modes[0].value);
 		
 		// add location at correct position in locations array
 		locations = [
@@ -247,14 +271,28 @@ Qualtrics.SurveyEngine.addOnload(function() {
 		  // Check if the place has a geometry (location)
 		  if (place.geometry) {
 			// Set or update the marker's position
-			marker.setMap(map); // In case the marker was previously not associated with the map
-			marker.setPosition(place.geometry.location);
+			if (locations[index].marker == null) {
+				locations[index].marker = new google.maps.Marker({ 
+				  map,
+				  position: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+				});
+			} else {
+				locations[index].marker.setPosition(place.geometry.location);
+			}
+			locations[index].marker.setMap(map); // In case the marker was previously not associated with the map
 
 			var bounds = new google.maps.LatLngBounds();
-			locations.forEach((elem) => {
-				bounds.extend(elem.marker.getPosition());
+			let markercount = 0;
+			locations.forEach((elem) => {	
+				if (elem.marker != null) {
+					markercount++;
+					bounds.extend(elem.marker.getPosition());
+				}
 			});
 			map.fitBounds(bounds);
+			if (markercount == 1) {
+				map.setZoom(map.getZoom() - 4);
+			}
 		  } else {
 			// Handle case where no place was selected
 			console.log('No place selected or place has no location data.');
@@ -274,7 +312,9 @@ Qualtrics.SurveyEngine.addOnload(function() {
 		else return;
 		
 		// remove marker
-		locations[index].marker.setMap(null);
+		if (marker != null) {
+			locations[index].marker.setMap(null);
+		}
 		
 		locations = [
 			...locations.slice(0, index),
@@ -287,7 +327,9 @@ Qualtrics.SurveyEngine.addOnload(function() {
 		
 		var bounds = new google.maps.LatLngBounds();
 		locations.forEach((elem) => {
-			bounds.extend(elem.marker.getPosition());
+			if (elem.marker != null) {
+				bounds.extend(elem.marker.getPosition());
+			}
 		});
 		map.fitBounds(bounds);	
 		
@@ -298,8 +340,6 @@ Qualtrics.SurveyEngine.addOnload(function() {
 	function updateDirections() {
 		if (!show_directions) return;
 		
-		console.log("UpdateDirections!");
-		
 		let durationTotal = 0;
 		let distanceTotal = 0;
 		
@@ -309,6 +349,8 @@ Qualtrics.SurveyEngine.addOnload(function() {
 			// --> iterate through all legs of the route
 			const current = locations[i];
 			const next = locations[i + 1];
+			
+			if (current.marker == null || next.marker == null) continue;
 			
 			var request = {
 			  origin: current.marker.getPosition(),
@@ -333,20 +375,22 @@ Qualtrics.SurveyEngine.addOnload(function() {
 	
 	function updateQualtricsData() {
 		
-		console.log(locations[0].marker.getPosition());
+		if (locations[0].marker != null) {
+			// save origin data
+			Qualtrics.SurveyEngine.setEmbeddedData(origin_field_result, locations[0].addressText );
+			Qualtrics.SurveyEngine.setEmbeddedData(origin_field_result_coordinates, locations[0].marker.getPosition().lat() + ", " + locations[0].marker.getPosition().lng());
+		}
 		
-		console.log(locations[1].marker.getPosition());
 		
-		// save origin data
-		Qualtrics.SurveyEngine.setEmbeddedData(origin_field_result, locations[0].addressText );
-		Qualtrics.SurveyEngine.setEmbeddedData(origin_field_result_coordinates, locations[0].marker.getPosition().lat() + ", " + locations[0].marker.getPosition().lng());
-		
-		// save destination data
-		Qualtrics.SurveyEngine.setEmbeddedData(destination_field_result, locations[1].addressText );
-		Qualtrics.SurveyEngine.setEmbeddedData(destination_field_result_coordinates, locations[1].marker.getPosition().lat() + ", " + locations[1].marker.getPosition().lng() );
+		if (locations[1].marker != null) {
+			// save destination data
+			Qualtrics.SurveyEngine.setEmbeddedData(destination_field_result, locations[1].addressText );
+			Qualtrics.SurveyEngine.setEmbeddedData(destination_field_result_coordinates, locations[1].marker.getPosition().lat() + ", " + locations[1].marker.getPosition().lng() );
+		}
 	}
 	
 
+	// Add initial locations
 	addLocation(null, Qualtrics.SurveyEngine.getEmbeddedData(origin_field));
 	addLocation(null, Qualtrics.SurveyEngine.getEmbeddedData(destination_field));
 	

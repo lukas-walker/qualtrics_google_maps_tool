@@ -2,22 +2,38 @@
 Qualtrics.SurveyEngine.addOnload(function() {
 	// for reference: https://api.qualtrics.com/82bd4d5c331f1-qualtrics-java-script-question-api-class
 	
+	
+	// THIS SCRIPT HAS TO BE CONNECTED TO A TEXT INPUT TYPE QUESTION.
+	
+	
+	
+	// THE FOLLOWING FIELDS NEED TO BE ADAPTED AND ADDED AS EMBEDDED FIELDS IN THE SURVEY FLOW
+	
+	// DATA FIELDS
+    // These fields contain data after respondents filled in the question
+  
+	// Contains the text name of the input field
+	let EMBEDDED_DATA_FIELD_ADDRESS = "w6_q18_address";
+	// Contains the coordinates of the input field
+	let EMBEDDED_DATA_FIELD_COORDINATES = "w6_q18_coordinates";
+	
+	
+
+	// API KEYS
+	// These fields need to be defined in the survey as embedded FIELDS
+
+	// The Google Maps Api Key
 	let API_KEY = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_API_KEY");
+	// The Map ID from your google cloud map platform (https://console.cloud.google.com/google/maps-apis/home)
 	let MAP_ID  = Qualtrics.SurveyEngine.getEmbeddedData("__MAP_ID");
 	
-	// use this script on a text input type question.
-	let questionObject = this;
-	
-	let EMBEDDED_DATA_FIELD_LATITUDE = "w6_q18_latitude";
-	let EMBEDDED_DATA_FIELD_LONGITUDE = "w6_q18_longitude";
-	let EMBEDDED_DATA_FIELD_ADDRESS = "w6_q18_address";
-	
-	
-	questionObject.disableNextButton();
-
-	let qid = questionObject.questionId;
+  
+	// **************************************
+	// DO NOT edit anything beyond this point
+	// **************************************
 	
 
+	let qid = this.questionId;
 
 	// Function to load the Google Maps API script dynamically
 	function loadGoogleMapsAPI(callback) {
@@ -65,8 +81,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 			let place = autocomplete.getPlace();
 		  
 			if (place.geometry && place.geometry.location) {
-				Qualtrics.SurveyEngine.setEmbeddedData(EMBEDDED_DATA_FIELD_LATITUDE, place.geometry.location.lat());
-				Qualtrics.SurveyEngine.setEmbeddedData(EMBEDDED_DATA_FIELD_LONGITUDE, place.geometry.location.lng());
+				Qualtrics.SurveyEngine.setEmbeddedData(EMBEDDED_DATA_FIELD_COORDINATES, place.geometry.location.lat() + ", " + place.geometry.location.lng());
 			} else {
 				console.error("Selected place has no geometry.");
 			}
@@ -86,14 +101,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 			bounds.extend(marker.getPosition());
 			map.fitBounds(bounds);
 			map.setZoom(map.getZoom() - 4);
-			
-			questionObject.enableNextButton();
 		});    
-		
-		input.addEventListener('input', function() {
-			// Handle input that are not by autocomplete here
-			questionObject.disableNextButton();
-		});
 		
 		input.setAttribute('placeholder', '');
 	};
