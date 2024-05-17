@@ -3,7 +3,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
   // for reference: https://api.qualtrics.com/82bd4d5c331f1-qualtrics-java-script-question-api-class
   
   
-  // THIS SCRIPT HAS TO BE CONNECTED TO A TEXT INPUT TYPE QUESTION.
+  // THIS SCRIPT HAS TO BE CONNECTED TO A PURE TEXT TYPE QUESTION. (NO OTHER INPUT)
   
   
   
