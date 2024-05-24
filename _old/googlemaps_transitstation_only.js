@@ -2,6 +2,10 @@
 Qualtrics.SurveyEngine.addOnload(function() {
 	// for reference: https://api.qualtrics.com/82bd4d5c331f1-qualtrics-java-script-question-api-class
 	
+	// problems with qualtrics, Array.From and google Maps: version 5.53 is now deprecated
+	// https://stackoverflow.com/questions/76955952/array-from-with-an-implementation-that-doesnt-support-iterables-google-maps
+	// https://developers.google.com/maps/documentation/javascript/releases
+	// --> Array.from
 	
 	// THIS SCRIPT HAS TO BE CONNECTED TO A TEXT INPUT TYPE QUESTION.
 	
