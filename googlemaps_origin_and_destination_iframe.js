@@ -88,7 +88,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 			let script = document.createElement("script");
 			script.id = "mapsScript";
 			script.type = "text/javascript";
-			script.src = "https://maps.googleapis.com/maps/api/js?v=weekly&key="+API_KEY+"&libraries=places&callback=" + callback;
+			script.src = "https://maps.googleapis.com/maps/api/js?v=weekly&key="+API_KEY+"&libraries=places&callback=" + callback + "&language=" + Qualtrics.SurveyEngine.getEmbeddedData("Q_Language").toLowerCase();
 			document.head.appendChild(script);
 		} else {
 			initAutocomplete();
