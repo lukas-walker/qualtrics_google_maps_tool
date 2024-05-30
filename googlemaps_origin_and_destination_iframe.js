@@ -151,12 +151,12 @@ Qualtrics.SurveyEngine.addOnload(function() {
 									map.setZoom(map.getZoom() - 4);
 								}
 							}
-						}
+						} else if (event.data.type === "ready") {
+                            window.parent.postMessage({ type: "iframeReady" }, "*");
+                        }
 					});
 				
                     function loadGoogleMapsAPIIframe() {
-						console.log("API_KEY iframe: "+ apiKey);
-						console.log("MAP_ID iframe: "+ mapId);
 						
                         let script = document.createElement("script");
                         script.type = "text/javascript";
@@ -173,6 +173,11 @@ Qualtrics.SurveyEngine.addOnload(function() {
 						
 						
                     }
+					
+					// Notify parent window that iframe is ready
+                    window.onload = function() {
+                        window.parent.postMessage({ type: "iframeReady" }, "*");
+                    };
                 </script>
             </head>
             <body>
@@ -182,9 +187,9 @@ Qualtrics.SurveyEngine.addOnload(function() {
         `);
         iframeDoc.close();
 		
-		iframe.onload = function() {
-			iframe.contentWindow.postMessage({ type: "initMap", apiKey: API_KEY, mapId: MAP_ID }, "*");
-		};
+		//iframe.onload = function() {
+		//	iframe.contentWindow.postMessage({ type: "initMap", apiKey: API_KEY, mapId: MAP_ID }, "*");
+		//};
     }
 
 	// Function to initialize the Google Map
@@ -272,6 +277,13 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
 	createIframe();
 	loadGoogleMapsAPI('initAutocomplete');
+	
+	window.addEventListener("message", function(event) {
+        if (event.data.type === "iframeReady") {
+            let iframe = document.getElementById('mapIframe');
+            iframe.contentWindow.postMessage({ type: "initMap", apiKey: API_KEY, mapId: MAP_ID }, "*");
+        }
+    });
 });
 
 
